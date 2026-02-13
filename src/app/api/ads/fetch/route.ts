@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { getDb } from "@/lib/db";
 import { deleteExpiredAds } from "@/lib/ads";
 
 const corsHeaders = {
@@ -9,7 +9,8 @@ const corsHeaders = {
 export async function GET() {
   await deleteExpiredAds();
 
-  const allApproved = await prisma.ad.findMany({
+  const db = await getDb();
+  const allApproved = await db.ad.findMany({
     where: { status: "approved", approvedAt: { not: null } },
     select: {
       id: true,

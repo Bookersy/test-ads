@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
-import { prisma } from "@/lib/db";
+import { getDb } from "@/lib/db";
 import { isAdmin } from "@/lib/admin";
 
 export async function POST(
@@ -14,7 +14,8 @@ export async function POST(
 
   const { id } = await params;
 
-  await prisma.ad.update({
+  const db = await getDb();
+  await db.ad.update({
     where: { id },
     data: { status: "approved", approvedAt: new Date() },
   });

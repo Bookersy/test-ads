@@ -1,11 +1,12 @@
 import Link from "next/link";
-import { prisma } from "@/lib/db";
+import { getDb } from "@/lib/db";
 import { getSession } from "@/lib/auth";
 import SiteCountWidget from "@/components/SiteCountWidget";
 import ThemeToggle from "@/components/ThemeToggle";
 
 export default async function HomePage() {
-  const siteCount = await prisma.site.count();
+  const db = await getDb();
+  const siteCount = await db.site.count();
   const user = await getSession();
   return (
     <div className="min-h-screen">

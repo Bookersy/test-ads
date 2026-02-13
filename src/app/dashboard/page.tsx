@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { headers } from "next/headers";
 import { getSession } from "@/lib/auth";
-import { prisma } from "@/lib/db";
+import { getDb } from "@/lib/db";
 import { deleteExpiredAds } from "@/lib/ads";
 import AdList from "./AdList";
 import SnippetCard from "./SnippetCard";
@@ -16,7 +16,8 @@ export default async function DashboardPage() {
   const host = headersList.get("host") || "localhost:3000";
   const baseUrl = host.includes("localhost") ? `http://${host}` : `https://${host}`;
 
-  const ads = await prisma.ad.findMany({
+  const db = await getDb();
+  const ads = await db.ad.findMany({
     where: { ownerId: user.id },
     orderBy: { createdAt: "desc" },
   });

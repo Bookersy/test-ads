@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { getSession } from "@/lib/auth";
-import { prisma } from "@/lib/db";
+import { getDb } from "@/lib/db";
 import { isAdmin } from "@/lib/admin";
 import { deleteExpiredAds } from "@/lib/ads";
 import DevDashboard from "./DevDashboard";
@@ -13,13 +13,14 @@ export default async function DevDashboardPage() {
 
   await deleteExpiredAds();
 
+  const db = await getDb();
   const [pending, approved] = await Promise.all([
-    prisma.ad.findMany({
+    db.ad.findMany({
       where: { status: "pending" },
       include: { owner: { select: { email: true, name: true } } },
       orderBy: { createdAt: "desc" },
     }),
-    prisma.ad.findMany({
+    db.ad.findMany({
       where: { status: "approved" },
       include: { owner: { select: { email: true, name: true } } },
       orderBy: { createdAt: "desc" },

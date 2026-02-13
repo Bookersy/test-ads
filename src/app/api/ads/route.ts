@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
-import { prisma } from "@/lib/db";
+import { getDb } from "@/lib/db";
 import { deleteExpiredAds } from "@/lib/ads";
 
 export async function GET() {
@@ -9,7 +9,8 @@ export async function GET() {
   if (!user) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
-  const ads = await prisma.ad.findMany({
+  const db = await getDb();
+  const ads = await db.ad.findMany({
     where: { ownerId: user.id },
     orderBy: { createdAt: "desc" },
   });
@@ -38,7 +39,8 @@ export async function POST(req: Request) {
     }
     const days = Math.min(100, Math.max(1, parseInt(durationDays, 10) || 30));
 
-    const ad = await prisma.ad.create({
+    const db = await getDb();
+    const ad = await db.ad.create({
       data: {
         name,
         imageUrl,

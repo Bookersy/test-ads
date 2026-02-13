@@ -1,6 +1,7 @@
-import { prisma } from "./db";
+import { getDb } from "./db";
 
 export async function deleteExpiredAds() {
+  const prisma = await getDb();
   const now = new Date();
   const ads = await prisma.ad.findMany({
     where: {

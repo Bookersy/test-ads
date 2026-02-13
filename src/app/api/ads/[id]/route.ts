@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
-import { prisma } from "@/lib/db";
+import { getDb } from "@/lib/db";
 
 export async function PATCH(
   req: Request,
@@ -17,7 +17,8 @@ export async function PATCH(
     const body = await req.json();
     const { name, imageUrl, link } = body;
 
-    const existing = await prisma.ad.findFirst({
+    const db = await getDb();
+    const existing = await db.ad.findFirst({
       where: { id, ownerId: user.id },
     });
     if (!existing) {
@@ -29,7 +30,7 @@ export async function PATCH(
     if (imageUrl !== undefined) data.imageUrl = imageUrl;
     if (link !== undefined) data.link = link;
 
-    const ad = await prisma.ad.update({
+    const ad = await db.ad.update({
       where: { id },
       data,
     });
@@ -51,13 +52,14 @@ export async function DELETE(
 
   const { id } = await params;
 
-  const existing = await prisma.ad.findFirst({
+  const db = await getDb();
+  const existing = await db.ad.findFirst({
     where: { id, ownerId: user.id },
   });
   if (!existing) {
     return NextResponse.json({ error: "Ad not found" }, { status: 404 });
   }
 
-  await prisma.ad.delete({ where: { id } });
+  await db.ad.delete({ where: { id } });
   return NextResponse.json({ ok: true });
 }

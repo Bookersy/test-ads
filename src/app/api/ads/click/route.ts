@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { getDb } from "@/lib/db";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -14,7 +14,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "adId required" }, { status: 400, headers: corsHeaders });
     }
 
-    await prisma.ad.update({
+    const db = await getDb();
+    await db.ad.update({
       where: { id: adId },
       data: { clicks: { increment: 1 } },
     });

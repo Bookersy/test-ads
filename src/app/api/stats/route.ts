@@ -1,7 +1,8 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { getDb } from "@/lib/db";
 
 export async function GET() {
-  const siteCount = await prisma.site.count();
+  const db = await getDb();
+  const siteCount = await db.site.count();
   return NextResponse.json({ siteCount });
 }

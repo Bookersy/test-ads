@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/db";
+import { getDb } from "@/lib/db";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -28,7 +28,8 @@ export async function POST(req: Request) {
       return NextResponse.json({ ok: true }, { headers: corsHeaders });
     }
 
-    await prisma.site.upsert({
+    const db = await getDb();
+    await db.site.upsert({
       where: { hostname: clean },
       create: { hostname: clean },
       update: { lastSeen: new Date() },

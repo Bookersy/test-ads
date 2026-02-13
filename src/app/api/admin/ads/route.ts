@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { getSession } from "@/lib/auth";
-import { prisma } from "@/lib/db";
+import { getDb } from "@/lib/db";
 import { isAdmin } from "@/lib/admin";
 
 export async function GET() {
@@ -9,13 +9,14 @@ export async function GET() {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
+  const db = await getDb();
   const [pending, approved] = await Promise.all([
-    prisma.ad.findMany({
+    db.ad.findMany({
       where: { status: "pending" },
       include: { owner: { select: { email: true, name: true } } },
       orderBy: { createdAt: "desc" },
     }),
-    prisma.ad.findMany({
+    db.ad.findMany({
       where: { status: "approved" },
       include: { owner: { select: { email: true, name: true } } },
       orderBy: { createdAt: "desc" },
