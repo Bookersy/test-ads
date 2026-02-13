@@ -19,10 +19,13 @@ async function getPrismaForCloudflare() {
   return null;
 }
 
-// Standard Prisma (SQLite) - used for local dev or fallback
+// Standard Prisma (SQLite) - used for local dev or fallback during build
+// Use in-memory URL when DATABASE_URL is missing (e.g. Cloudflare build prerender)
 const globalForPrisma = globalThis as unknown as { prisma: PrismaClient };
+const dbUrl = process.env.DATABASE_URL || "file::memory:";
 const defaultPrisma =
-  globalForPrisma.prisma || new PrismaClient();
+  globalForPrisma.prisma ||
+  new PrismaClient({ datasources: { db: { url: dbUrl } } });
 if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = defaultPrisma;
 
 /**

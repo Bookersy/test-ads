@@ -78,11 +78,30 @@ Update your Google OAuth redirect URI to include your production URL.
 
 ## Step 5: Deploy
 
+### Option A: Deploy from local / CI
+
 ```bash
 npm run deploy
 ```
 
 This builds your app with OpenNext and deploys to Cloudflare Workers.
+
+### Option B: Deploy as Worker from Git (Workers Builds)
+
+Use **Workers Builds** instead of Pages to deploy as a Cloudflare Worker with automatic CI/CD from GitHub.
+
+1. In [Cloudflare Dashboard](https://dash.cloudflare.com) → **Workers & Pages** → **Create** → **Create Worker** → **Import from Git**
+2. Connect your GitHub repo (e.g. `Bookersy/test-ads`)
+3. In **Settings → Build**, set:
+   - **Build command**: `npm ci && npx opennextjs-cloudflare build`
+   - **Deploy command**: `npx wrangler deploy`
+   - **Root directory**: leave empty (or `.` if needed)
+4. Ensure D1 is created and `database_id` is set in `wrangler.jsonc`
+5. Add **Build variables** (optional): `DATABASE_URL` = `file::memory:` — the build uses this during prerender when D1 isn’t available (in-memory SQLite is fine for static page generation)
+6. Add **Runtime variables** in **Settings → Variables & Secrets**:
+   - `NEXTAUTH_URL`, `NEXTAUTH_SECRET`, `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET`
+
+**Note:** The app uses `file::memory:` as a fallback when `DATABASE_URL` is not set during build, so the build command works even without build variables.
 
 ## Local Development
 
