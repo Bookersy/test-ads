@@ -9,8 +9,9 @@ async function getPrismaForCloudflare() {
     const { env } = await getCloudflareContext({ async: true });
     const db = (env as { DB?: unknown }).DB;
     if (db) {
-      const adapter = new PrismaD1(db);
-      return new PrismaClient({ adapter });
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const adapter = new PrismaD1(db as any);
+      return new PrismaClient({ adapter } as any);
     }
   } catch {
     // Cloudflare packages not available or no D1 binding
