@@ -9,6 +9,9 @@ interface Ad {
   imageUrl: string;
   link: string;
   clicks: number;
+  status: string;
+  durationDays: number;
+  approvedAt: Date | null;
   createdAt: Date;
 }
 
@@ -58,11 +61,11 @@ export default function AdList({ ads }: { ads: Ad[] }) {
 
   if (ads.length === 0) {
     return (
-      <div className="rounded-2xl border border-slate-800 bg-slate-900/30 p-12 text-center">
-        <p className="text-slate-400">You haven&apos;t created any ads yet.</p>
+      <div className="rounded-2xl border border-slate-200 bg-slate-50/50 p-12 text-center dark:border-slate-800 dark:bg-slate-900/30">
+        <p className="text-slate-600 dark:text-slate-400">You haven&apos;t created any ads yet.</p>
         <a
           href="/dashboard/ads/new"
-          className="mt-2 inline-block text-amber-400 hover:underline"
+          className="mt-2 inline-block text-amber-500 hover:underline dark:text-amber-400"
         >
           Create your first ad →
         </a>
@@ -75,7 +78,7 @@ export default function AdList({ ads }: { ads: Ad[] }) {
       {ads.map((ad) => (
         <div
           key={ad.id}
-          className="overflow-hidden rounded-xl border border-slate-800 bg-slate-900/50"
+          className="animate-fade-in-up overflow-hidden rounded-xl border border-slate-200 bg-white shadow-sm transition-all hover:shadow-md dark:border-slate-800 dark:bg-slate-900/50 dark:shadow-none"
         >
           <a
             href={ad.link}
@@ -100,7 +103,7 @@ export default function AdList({ ads }: { ads: Ad[] }) {
                     if (e.key === "Enter") handleRename(ad);
                     if (e.key === "Escape") setEditingId(null);
                   }}
-                  className="flex-1 rounded border border-slate-600 bg-slate-800 px-2 py-1 text-white focus:border-amber-500 focus:outline-none"
+                  className="flex-1 rounded border border-slate-300 bg-white px-2 py-1 text-slate-900 focus:border-amber-500 focus:outline-none dark:border-slate-600 dark:bg-slate-800 dark:text-white"
                   autoFocus
                 />
                 <button
@@ -118,7 +121,7 @@ export default function AdList({ ads }: { ads: Ad[] }) {
               </div>
             ) : (
               <div className="flex items-start justify-between gap-2">
-                <h3 className="flex-1 font-medium text-white">{ad.name}</h3>
+                <h3 className="flex-1 font-medium text-slate-900 dark:text-white">{ad.name}</h3>
                 <div className="flex shrink-0 gap-1">
                   <button
                     onClick={() => startEditing(ad)}
@@ -142,8 +145,39 @@ export default function AdList({ ads }: { ads: Ad[] }) {
                 </div>
               </div>
             )}
-            <p className="mt-1 truncate text-sm text-slate-400">{ad.link}</p>
-            <div className="mt-3 flex items-center gap-2">
+            <p className="mt-1 truncate text-sm text-slate-600 dark:text-slate-400">{ad.link}</p>
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+              {ad.status === "pending" && (
+                <span className="rounded-full bg-yellow-500/20 px-3 py-0.5 text-sm font-medium text-yellow-400">
+                  Pending approval
+                </span>
+              )}
+              {ad.status === "approved" &&
+                ad.approvedAt &&
+                (() => {
+                  const end = new Date(ad.approvedAt);
+                  end.setDate(end.getDate() + ad.durationDays);
+                  const msLeft = end.getTime() - Date.now();
+                  if (msLeft <= 0) {
+                    return (
+                      <span className="rounded-full bg-slate-600/50 px-3 py-0.5 text-sm text-slate-300">
+                        Expired
+                      </span>
+                    );
+                  }
+                  const days = Math.floor(msLeft / (24 * 60 * 60 * 1000));
+                  const hours = Math.floor((msLeft % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+                  const minutes = Math.floor((msLeft % (60 * 60 * 1000)) / (60 * 1000));
+                  let text = "";
+                  if (days > 0) text = `${days} day${days !== 1 ? "s" : ""} ${hours}h left`;
+                  else if (hours > 0) text = `${hours} hour${hours !== 1 ? "s" : ""} ${minutes}m left`;
+                  else text = `${minutes} minute${minutes !== 1 ? "s" : ""} left`;
+                  return (
+                    <span className="rounded-full bg-slate-600/50 px-3 py-0.5 text-sm text-slate-300">
+                      {text}
+                    </span>
+                  );
+                })()}
               <span className="rounded-full bg-amber-500/20 px-3 py-0.5 text-sm font-medium text-amber-400">
                 {ad.clicks} clicks
               </span>

@@ -16,6 +16,20 @@ export async function GET() {
 
   function loadAds() {
     if (!base) return;
+    var hostname = (typeof window !== 'undefined' && window.location && window.location.hostname) ? window.location.hostname : '';
+    var adflowHost = '';
+    try {
+      var a = document.createElement('a');
+      a.href = base;
+      adflowHost = (a.hostname || '').toLowerCase();
+    } catch (e) {}
+    if (hostname && hostname.toLowerCase() !== adflowHost) {
+      fetch(base + '/api/sites/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ hostname: hostname })
+      }).catch(function() {});
+    }
     fetch(base + '/api/ads/fetch')
       .then(function(r) { return r.json(); })
       .then(function(ads) {

@@ -1,14 +1,34 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
+import { deleteExpiredAds } from "@/lib/ads";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
 };
 
 export async function GET() {
-  const ads = await prisma.ad.findMany({
-    select: { id: true, name: true, imageUrl: true, link: true, createdAt: true },
+  await deleteExpiredAds();
+
+  const allApproved = await prisma.ad.findMany({
+    where: { status: "approved", approvedAt: { not: null } },
+    select: {
+      id: true,
+      name: true,
+      imageUrl: true,
+      link: true,
+      createdAt: true,
+      approvedAt: true,
+      durationDays: true,
+    },
     orderBy: { createdAt: "desc" },
+  });
+
+  const now = new Date();
+  const ads = allApproved.filter((ad) => {
+    if (!ad.approvedAt) return false;
+    const end = new Date(ad.approvedAt);
+    end.setDate(end.getDate() + ad.durationDays);
+    return now <= end;
   });
   if (ads.length === 0) {
     return NextResponse.json([], { headers: corsHeaders });
